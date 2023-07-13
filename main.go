@@ -14,6 +14,7 @@ func setuproutes(app *fiber.App) {
 	app.Get("/book", routes.Getbooks)
 	app.Get("/book/:book_id", routes.Getbook)
 	app.Put("/book/:book_id", routes.Updatebook)
+	app.Put("/lib", routes.InsertBookintoLibrary)
 	app.Delete("/book/:book_id", routes.Deletebook)
 }
 

@@ -6,7 +6,6 @@ import (
 	"github.com/prranavv/first_project/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 type DBinstance struct {
@@ -16,12 +15,13 @@ type DBinstance struct {
 var Database DBinstance
 
 func ConnectDb() {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
+	db, err := gorm.Open(sqlite.Open("api.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 	log.Println("Connected into the database successfully")
 	//Add Migrations
-	db.AutoMigrate(&models.Book{}, &models.Library{})
+	db.AutoMigrate(&models.Book{})
+	db.AutoMigrate(&models.Library{})
 	Database = DBinstance{Db: db}
 }
