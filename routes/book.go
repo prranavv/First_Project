@@ -10,6 +10,7 @@ import (
 
 type BookDTO struct {
 	Book_ID int    `json:"book_id"`
+	Name    string `json:"name"`
 	Author  string `json:"author"`
 	ISBN    string `json:"isbn"`
 }
@@ -17,6 +18,7 @@ type BookDTO struct {
 func CreateBookResponse(book models.Book) BookDTO {
 	return BookDTO{
 		Book_ID: book.Book_ID,
+		Name:    book.Name,
 		Author:  book.Author,
 		ISBN:    book.ISBN,
 	}
@@ -34,7 +36,7 @@ func Createbook(c *fiber.Ctx) error {
 }
 
 // GET
-func Getbook(c *fiber.Ctx) error {
+func Getbooks(c *fiber.Ctx) error {
 	books := []models.Book{}
 	database.Database.Db.Find(&books)
 	responsebooks := []BookDTO{}
@@ -65,6 +67,7 @@ func Updatebook(c *fiber.Ctx) error {
 	}
 	type Updatebook struct {
 		Author string `json:"author"`
+		Name   string `json:"name"`
 		ISBN   string `json:"isbn"`
 	}
 	var newbook Updatebook
@@ -73,6 +76,7 @@ func Updatebook(c *fiber.Ctx) error {
 	}
 	book.Author = newbook.Author
 	book.ISBN = newbook.ISBN
+	book.Name = newbook.Name
 	database.Database.Db.Save(&book)
 	responsebook := CreateBookResponse(book)
 	return c.Status(200).JSON(responsebook)
@@ -86,10 +90,25 @@ func Deletebook(c *fiber.Ctx) error {
 	}
 	var book models.Book
 	if err := findbookbyid(id, &book); err != nil {
-		c.Status(400).JSON("Book does not exist")
+		return c.Status(400).JSON("Book does not exist")
 	}
-	if err := database.Database.Db.Delete(&book).Error; err != nil {
+	if err := database.Database.Db.Delete(&book, "book_id=?", id).Error; err != nil {
 		return c.Status(404).JSON(err.Error())
 	}
 	return c.Status(200).JSON("Successfully deleted")
+}
+
+// GET a single book
+func Getbook(c *fiber.Ctx) error {
+	id, err := c.ParamsInt("book_id")
+	var book models.Book
+	if err != nil {
+		return c.Status(400).JSON("Book does not exist")
+	}
+
+	if err := findbookbyid(id, &book); err != nil {
+		return c.Status(400).JSON(err.Error())
+	}
+	responsebook := CreateBookResponse(book)
+	return c.Status(200).JSON(responsebook)
 }
